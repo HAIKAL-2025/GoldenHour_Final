@@ -27,15 +27,33 @@ public class AutoEmailAndAnalytics {
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
 
-            // Format: Date,Model,Quantity,TotalPrice
+            // Loop through every line in the file
             while ((line = br.readLine()) != null) {
+                // 1. SKIP EMPTY LINES (Fixes the crash)
+                if (line.trim().isEmpty()) {
+                    continue;
+                }
+
                 String[] data = line.split(",");
-                double price = Double.parseDouble(data[3]);
-                total += price;
+
+                // 2. CHECK COLUMN COUNT (Safety Check)
+                // Expected format: Date,Customer,Model,Qty,Total (5 columns)
+                if (data.length < 5) {
+                    continue; 
+                }
+
+                try {
+                    // 3. GET TOTAL PRICE (Column 4, since counting starts at 0)
+                    double price = Double.parseDouble(data[4]);
+                    total += price;
+                } catch (NumberFormatException e) {
+                    // Skip if the price is not a number
+                    continue;
+                }
             }
 
         } catch (IOException e) {
-            System.out.println("Error reading sales file.");
+            System.out.println("Error reading sales file: " + e.getMessage());
         }
 
         return total;
@@ -49,16 +67,32 @@ public class AutoEmailAndAnalytics {
             String line;
 
             while ((line = br.readLine()) != null) {
-                String[] data = line.split(",");
-                String model = data[1];
-                int quantity = Integer.parseInt(data[2]);
+                // 1. SKIP EMPTY LINES
+                if (line.trim().isEmpty()) {
+                    continue;
+                }
 
-                productMap.put(model,
-                        productMap.getOrDefault(model, 0) + quantity);
+                String[] data = line.split(",");
+
+                // 2. CHECK COLUMN COUNT
+                if (data.length < 5) {
+                    continue;
+                }
+
+                // 3. GET MODEL & QTY (Indices adjusted for your format)
+                // Date[0], Customer[1], Model[2], Qty[3], Total[4]
+                String model = data[2]; 
+                
+                try {
+                    int quantity = Integer.parseInt(data[3]);
+                    productMap.put(model, productMap.getOrDefault(model, 0) + quantity);
+                } catch (NumberFormatException e) {
+                    continue;
+                }
             }
 
         } catch (IOException e) {
-            System.out.println("Error reading sales file.");
+            System.out.println("Error reading sales file: " + e.getMessage());
         }
 
         String bestProduct = "N/A";
@@ -89,7 +123,7 @@ public class AutoEmailAndAnalytics {
         System.out.println("To: " + receiverEmail);
         System.out.println("Subject: Daily Sales Report - " + reportDate);
         System.out.println("Body:");
-        System.out.println("Total Sales: RM " + totalSales);
+        System.out.println("Total Sales: RM " + String.format("%.2f", totalSales));
         System.out.println("Most Sold Product: " + bestProduct);
         System.out.println("Attachment: " + attachmentPath);
         System.out.println("======================");
@@ -101,16 +135,24 @@ public class AutoEmailAndAnalytics {
 
     public static void main(String[] args) {
 
-        // Sample file path (MUST EXIST)
-        String salesFile = "sales_2025-10-13.txt";
-        String reportDate = "2025-10-13";
+        // CHANGE THIS to match the actual file name in your project folder
+        String salesFile = "sales_data.csv"; 
+        
+        String reportDate = "2025-10-13"; // You can automate this date too
         String email = "your_email@gmail.com";
+
+        // Check if file exists before running to avoid confusion
+        java.io.File file = new java.io.File(salesFile);
+        if (!file.exists()) {
+            System.out.println("Error: File '" + salesFile + "' not found. Run SalesSystem first!");
+            return;
+        }
 
         double totalSales = calculateTotalSales(salesFile);
         String bestProduct = findMostSoldProduct(salesFile);
 
         System.out.println("=== DAILY SALES ANALYTICS ===");
-        System.out.println("Total Sales: RM " + totalSales);
+        System.out.println("Total Sales: RM " + String.format("%.2f", totalSales));
         System.out.println("Most Sold Product: " + bestProduct);
 
         sendAutoEmail(
