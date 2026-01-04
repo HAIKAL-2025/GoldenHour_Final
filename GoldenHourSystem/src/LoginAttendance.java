@@ -24,7 +24,7 @@ class Employee {
     }
 }
 
-public class GoldenHourSystem extends JFrame {
+public class LoginAttendance extends JFrame {
     private CardLayout cardLayout = new CardLayout();
     private JPanel mainPanel = new JPanel(cardLayout);
     private ArrayList<Employee> employeeList = new ArrayList<>();
@@ -34,7 +34,7 @@ public class GoldenHourSystem extends JFrame {
     private HashMap<String, LocalDateTime> activeSessions = new HashMap<>(); 
     private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public GoldenHourSystem() {
+    public LoginAttendance() {
         loadEmployeeData(); // Data Load State [cite: 209]
         setupGUI();
         
@@ -212,6 +212,6 @@ public class GoldenHourSystem extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new GoldenHourSystem().setVisible(true));
+        SwingUtilities.invokeLater(() -> new LoginAttendance().setVisible(true));
     }
 }
