@@ -9,7 +9,7 @@ import java.util.HashMap;
 
 // Object-Oriented Data Model 
 class Employee {
-    String id, name, password, role;
+    private String id, name, password, role;
 
     public Employee(String id, String name, String role, String password) {
         this.id = id;
@@ -18,9 +18,15 @@ class Employee {
         this.role = role;
     }
 
-    // Helper to format data for CSV storage [cite: 200]
+    // --- GETTERS (The Public Doors) ---
+    public String getId() { return id; }
+    public String getName() { return name; }
+    public String getPassword() { return password; }
+    public String getRole() { return role; }
+
+    // Helper to format data for CSV storage
     public String toCSV() {
-        return id + "," + name + "," + password + "," + role;
+        return id + "," + name + "," + role + "," + password;
     }
 }
 
@@ -30,12 +36,12 @@ public class LoginAttendance extends JFrame {
     private ArrayList<Employee> employeeList = new ArrayList<>();
     private Employee currentUser = null;
     
-    // Track clock-in times for calculation [cite: 50]
+    // Track clock-in times for calculation
     private HashMap<String, LocalDateTime> activeSessions = new HashMap<>(); 
     private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public LoginAttendance() {
-        loadEmployeeData(); // Data Load State [cite: 209]
+        loadEmployeeData(); 
         setupGUI();
         
         setTitle("Golden Hour Store Management System");
@@ -44,31 +50,31 @@ public class LoginAttendance extends JFrame {
         setLocationRelativeTo(null);
     }
 
-    // Load data from storage on startup [cite: 208, 209]
+    // Load data from storage on startup
     private void loadEmployeeData() {
-    File file = new File("employee.csv");
-    try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-        String line;
-        br.readLine(); // Skip header
-        while ((line = br.readLine()) != null) {
-            String[] data = line.split(",");
-            if (data.length >= 4) {
-                // .trim() removes any accidental spaces from the CSV file
-                employeeList.add(new Employee(
-                    data[0].trim(), 
-                    data[1].trim(), 
-                    data[2].trim(), 
-                    data[3].trim()
-                ));
+        File file = new File("employee.csv");
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            br.readLine(); // Skip header
+            while ((line = br.readLine()) != null) {
+                String[] data = line.split(",");
+                if (data.length >= 4) {
+                    // .trim() removes any accidental spaces
+                    employeeList.add(new Employee(
+                        data[0].trim(), 
+                        data[1].trim(), 
+                        data[2].trim(), 
+                        data[3].trim()
+                    ));
+                }
             }
+        } catch (IOException e) {
+            System.out.println("Could not find employee.csv in " + file.getAbsolutePath());
         }
-    } catch (IOException e) {
-        System.out.println("Could not find employee.csv in " + file.getAbsolutePath());
     }
-}
 
     private void setupGUI() {
-        // --- 1. LOGIN PANEL [cite: 26-28] ---
+        // --- 1. LOGIN PANEL ---
         JPanel loginPanel = new JPanel(new GridLayout(0, 1, 10, 10));
         loginPanel.setBorder(BorderFactory.createEmptyBorder(40, 40, 40, 40));
         JTextField idField = new JTextField();
@@ -94,7 +100,7 @@ public class LoginAttendance extends JFrame {
         dashPanel.add(regBtn);
         dashPanel.add(logoutBtn);
 
-        // --- 3. REGISTRATION PANEL [cite: 30, 41-46] ---
+        // --- 3. REGISTRATION PANEL ---
         JPanel regPanel = new JPanel(new GridLayout(0, 1, 10, 10));
         regPanel.setBorder(BorderFactory.createEmptyBorder(40, 40, 40, 40));
         JTextField newName = new JTextField();
@@ -115,36 +121,44 @@ public class LoginAttendance extends JFrame {
         mainPanel.add(regPanel, "REG");
         add(mainPanel);
 
-        // --- BUTTON LOGIC ---
+        // --- BUTTON LOGIC (Fixed Access Modifiers) ---
         loginBtn.addActionListener(e -> {
             String id = idField.getText();
             String pass = new String(passField.getPassword());
+            boolean found = false;
+            
             for (Employee emp : employeeList) {
-                if (emp.id.equals(id) && emp.password.equals(pass)) {
+                // FIXED: Using getters instead of direct field access
+                if (emp.getId().equals(id) && emp.getPassword().equals(pass)) {
                     currentUser = emp;
-                    welcomeLabel.setText("Welcome, " + emp.name + " (" + emp.id + ")");
-                    // Registration button only visible to Managers 
-                    regBtn.setVisible(emp.role.equalsIgnoreCase("Manager"));
+                    welcomeLabel.setText("Welcome, " + emp.getName() + " (" + emp.getId() + ")");
+                    
+                    // Registration button only visible to Managers
+                    regBtn.setVisible(emp.getRole().equalsIgnoreCase("Manager"));
+                    
                     cardLayout.show(mainPanel, "DASH");
-                    return;
+                    found = true;
+                    break;
                 }
             }
-            JOptionPane.showMessageDialog(this, "Login Failed: Invalid User ID or Password.");
+            if (!found) {
+                JOptionPane.showMessageDialog(this, "Login Failed: Invalid User ID or Password.");
+            }
         });
 
         clockInBtn.addActionListener(e -> {
-            activeSessions.put(currentUser.id, LocalDateTime.now());
+            activeSessions.put(currentUser.getId(), LocalDateTime.now());
             recordAttendance("Clock In", null);
         });
 
         clockOutBtn.addActionListener(e -> {
-            if (activeSessions.containsKey(currentUser.id)) {
-                LocalDateTime start = activeSessions.get(currentUser.id);
+            if (activeSessions.containsKey(currentUser.getId())) {
+                LocalDateTime start = activeSessions.get(currentUser.getId());
                 LocalDateTime end = LocalDateTime.now();
                 Duration duration = Duration.between(start, end);
-                double hours = duration.toMinutes() / 60.0; // Total Hours calculation 
+                double hours = duration.toMinutes() / 60.0; 
                 recordAttendance("Clock Out", String.format("%.1f", hours));
-                activeSessions.remove(currentUser.id);
+                activeSessions.remove(currentUser.getId());
             } else {
                 JOptionPane.showMessageDialog(this, "Error: You must Clock In first.");
             }
@@ -154,9 +168,9 @@ public class LoginAttendance extends JFrame {
         backBtn.addActionListener(e -> cardLayout.show(mainPanel, "DASH"));
 
         saveUserBtn.addActionListener(e -> {
-            Employee newUser = new Employee(newId.getText(), newName.getText(), newPass.getText(), (String)roleBox.getSelectedItem());
+            Employee newUser = new Employee(newId.getText(), newName.getText(), (String)roleBox.getSelectedItem(), newPass.getText());
             employeeList.add(newUser);
-            saveEmployeeToCSV(newUser); // Modify stored data [cite: 201]
+            saveEmployeeToCSV(newUser);
             JOptionPane.showMessageDialog(this, "Employee successfully registered!");
             cardLayout.show(mainPanel, "DASH");
         });
@@ -165,43 +179,37 @@ public class LoginAttendance extends JFrame {
             currentUser = null;
             idField.setText("");
             passField.setText("");
-            cardLayout.show(mainPanel, "LOGIN"); // Logout without terminating 
+            cardLayout.show(mainPanel, "LOGIN"); 
         });
     }
 
     private void recordAttendance(String type, String hours) {
-    File file = new File("attendance.csv");
-    // Check if we need to write the header (only if file is new/empty)
-    boolean needsHeader = !file.exists() || file.length() == 0;
-    
-    String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-    
-    // Always use 'true' for append mode
-    try (PrintWriter pw = new PrintWriter(new FileWriter(file, true))) {
+        File file = new File("attendance.csv");
+        boolean needsHeader = !file.exists() || file.length() == 0;
         
-        // 1. Write the Header if this is a new file
-        if (needsHeader) {
-            pw.println("EmployeeID,Name,Action,Timestamp,HoursWorked");
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        
+        try (PrintWriter pw = new PrintWriter(new FileWriter(file, true))) {
+            if (needsHeader) {
+                pw.println("EmployeeID,Name,Action,Timestamp,HoursWorked");
+            }
+            
+            String hoursValue = (hours != null) ? hours : "-";
+            // Fixed: Using getters here too
+            String row = String.format("%s,%s,%s,%s,%s", 
+                            currentUser.getId(), 
+                            currentUser.getName(), 
+                            type, 
+                            timestamp, 
+                            hoursValue);
+            
+            pw.println(row);
+            JOptionPane.showMessageDialog(this, type + " Successful!");
+            
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error saving to attendance.csv");
         }
-        
-        // 2. Format the data row
-        String hoursValue = (hours != null) ? hours : "-";
-        String row = String.format("%s,%s,%s,%s,%s", 
-                        currentUser.id, 
-                        currentUser.name, 
-                        type, 
-                        timestamp, 
-                        hoursValue);
-        
-        // 3. Save the row
-        pw.println(row);
-        
-        JOptionPane.showMessageDialog(this, type + " Successful!");
-        
-    } catch (IOException e) {
-        JOptionPane.showMessageDialog(this, "Error saving to attendance.csv");
     }
-}
 
     private void saveEmployeeToCSV(Employee emp) {
         try (PrintWriter pw = new PrintWriter(new FileWriter("employee.csv", true))) {
