@@ -16,8 +16,11 @@ public class StockCount {
     public static void main(String[] args){
         Scanner userInput = new Scanner(System.in);
         
+        int tallyCorrect = 0;
+        int tallyMismatch = 0;
+        int totalModelCheck = 0;
+        
         List<List<String>> records = new ArrayList<>(); 
-        // FIXED: Pointing to "models.csv" instead of the old file
         try(BufferedReader br = new BufferedReader(new FileReader("models.csv"))){
             String line;
             while((line = br.readLine()) != null){ 
@@ -28,8 +31,13 @@ public class StockCount {
             LocalTime currentTime = LocalTime.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
             String textTime = currentTime.format(formatter);
+            boolean isNight = currentTime.isAfter(LocalTime.of(19,00));
             
-            System.out.println("=== Morning Stock Count (Outlet C60) ===");
+            if(!isNight)
+                System.out.println("=== Morning Stock Count (Outlet C60) ===");
+            else
+                System.out.println("=== Night Stock Count (Outlet C60) ===");
+            
             System.out.println("Date: " + LocalDate.now());
             System.out.println("Time: " + textTime);
             System.out.println("--------------------------------");
@@ -60,17 +68,32 @@ public class StockCount {
                 
                 if(count == systemStock){
                     System.out.println("Status: [MATCH]"); 
+                    tallyCorrect++;
                 } else {
                     int diff = abs(count - systemStock);
                     System.out.println("Status: [MISMATCH] (Difference: " + diff + ")");
+                    tallyMismatch++;
                 }
                 System.out.println("--------------------------------");
+                totalModelCheck++;
             }
-           
+            
+            System.out.println("Total Models Checked: " + totalModelCheck);
+            System.out.println("Tally Correct:" + tallyCorrect);
+            System.out.println("Tally Mismatch:" + tallyMismatch);
+            
+            if(!isNight)
+                System.out.println("Morning stock count completed");
+            else
+                System.out.println("Night stock count completed");
+            
+            System.out.println("Warning: Please verify stock");
+            
         } catch(FileNotFoundException e){
             System.out.println("Error: models.csv not found! Run DataSeeder first.");
         } catch(IOException e){
             System.out.println("Error reading file.");
+
         }
     }
 }
