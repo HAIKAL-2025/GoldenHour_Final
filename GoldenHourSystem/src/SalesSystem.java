@@ -63,9 +63,6 @@ public class SalesSystem {
             Sale newSale = new Sale(date, customer, modelCode, qty, total, payment, empName);
             SaleWriter.saveSale(newSale);
             
-            // C. Also save to sales_data.csv for your Analytics code
-            saveAnalyticsData(date, customer, modelCode, qty, total);
-            
             System.out.println("Sale Recorded!");
         } else {
             System.out.println("Transaction Cancelled.");
@@ -86,13 +83,5 @@ public class SalesSystem {
         } catch (IOException e) {
             System.out.println("Error updating stock.");
         }
-    }
-    
-    public static void saveAnalyticsData(String date, String cust, String model, int qty, double total) {
-        try (FileWriter fw = new FileWriter("sales_data.csv", true);
-             BufferedWriter bw = new BufferedWriter(fw)) {
-             bw.write(String.format("%s,%s,%s,%d,%.2f", date, cust, model, qty, total));
-             bw.newLine();
-        } catch (IOException e) {}
     }
 }
