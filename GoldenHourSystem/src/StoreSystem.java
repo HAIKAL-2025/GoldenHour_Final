@@ -53,7 +53,7 @@ class WatchModel {
     }
 }
 
-// --- CLASS 2: SALES RECORD (Updated with Seller Name) ---
+// --- CLASS 2: SALES RECORD ---
 class SalesRecord {
     private String date;
     private String customerName;
@@ -61,7 +61,7 @@ class SalesRecord {
     private int quantity;
     private double totalPrice;
     private String paymentMethod;
-    private String sellerName; // New Field
+    private String sellerName; 
 
     public SalesRecord(String date, String customerName, String modelName, int quantity, double totalPrice, String paymentMethod, String sellerName) {
         this.date = date;
@@ -97,17 +97,19 @@ class SalesRecord {
     }
 }
 
-// --- CLASS 3: DATA MANAGER (File Reading Version) ---
+// --- CLASS 3: DATA MANAGER ---
 class DataManager {
     private ArrayList<WatchModel> stockList = new ArrayList<>();
     private ArrayList<SalesRecord> salesList = new ArrayList<>();
     private Map<String, String> outletMap = new HashMap<>();
 
     public DataManager() {
-        // Load data from CSV files
-        loadOutletData("outlets.csv");
-        loadStockData("models.csv");
-        loadSalesData("sales.csv");
+        // UPDATED PATHS: Now pointing to the subdirectory
+        String folder = "GoldenHourSystem/";
+        
+        loadOutletData(folder + "outlets.csv");
+        loadStockData(folder + "models.csv");
+        loadSalesData(folder + "sales.csv");
     }
 
     // 1. Load Outlet Names from CSV
@@ -124,7 +126,7 @@ class DataManager {
             }
             System.out.println("Loaded " + outletMap.size() + " outlets.");
         } catch (FileNotFoundException e) {
-            System.out.println("Error: " + fileName + " not found. Please create it.");
+            System.out.println("Error: Could not find " + fileName);
         }
     }
 
@@ -155,13 +157,13 @@ class DataManager {
             }
             System.out.println("Loaded " + stockList.size() + " models.");
         } catch (FileNotFoundException e) {
-            System.out.println("Error: " + fileName + " not found.");
+            System.out.println("Error: Could not find " + fileName);
         } catch (Exception e) {
             System.out.println("Error reading models.csv: " + e.getMessage());
         }
     }
 
-    // 3. Load Sales Data from CSV (UPDATED)
+    // 3. Load Sales Data from CSV
     private void loadSalesData(String fileName) {
         try (Scanner fileScanner = new Scanner(new File(fileName))) {
             if (fileScanner.hasNextLine()) fileScanner.nextLine(); // Skip Header
@@ -185,7 +187,7 @@ class DataManager {
             }
             System.out.println("Loaded " + salesList.size() + " sales records.");
         } catch (FileNotFoundException e) {
-            System.out.println("Error: " + fileName + " not found.");
+            System.out.println("Error: Could not find " + fileName);
         }
     }
 
@@ -268,7 +270,7 @@ class DataManager {
         System.out.println("Model not found.");
     }
 
-    // --- EDIT SALES (UPDATED) ---
+    // --- EDIT SALES ---
     public void editSales(Scanner sc) {
         System.out.println("\n=== Edit Sales Information ===");
         System.out.print("Enter Customer Name to search: ");
@@ -292,7 +294,7 @@ class DataManager {
             System.out.println("3. Quantity");
             System.out.println("4. Total Price");
             System.out.println("5. Transaction Method");
-            System.out.println("6. Seller Name"); // New Option
+            System.out.println("6. Seller Name");
             
             System.out.print("> ");
             int choice = -1;
@@ -328,7 +330,7 @@ class DataManager {
                     System.out.print("Enter New Transaction Method: ");
                     targetSale.setPaymentMethod(sc.nextLine());
                     break;
-                case 6: // New Case
+                case 6:
                     System.out.print("Enter New Seller Name: ");
                     targetSale.setSellerName(sc.nextLine());
                     break;
@@ -351,7 +353,7 @@ public class StoreSystem {
         
         while (true) {
             System.out.println("\n===========================================");
-            System.out.println("   GOLDENHOUR MANAGEMENT SYSTEM    ");
+            System.out.println("   GOLDENHOUR MANAGEMENT SYSTEM (FARIST)   ");
             System.out.println("===========================================");
             System.out.println("1. Search Stock Information");
             System.out.println("2. Search Sales Information");
