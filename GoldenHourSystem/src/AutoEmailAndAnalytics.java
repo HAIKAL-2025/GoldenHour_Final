@@ -1,114 +1,135 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-/*
- * Module: Auto Email & Data Analytics
- * Description:
- * - Reads the official 'sales.csv' file
- * - Calculates total revenue
- * - Finds the most popular watch model
- * - Simulates sending a report to the Manager
- */
+public class AutoEmailAndAnalytics extends JFrame {
 
-public class AutoEmailAndAnalytics {
+    private JTextArea outputArea;
+    private double totalSales;
+    private String bestProduct;
 
-    /* ===============================
-       DATA ANALYTICS
-       =============================== */
+    // ================= ANALYTICS METHODS =================
 
-    // Calculate total sales amount
     public static double calculateTotalSales(String filePath) {
         double total = 0.0;
-
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
-
             while ((line = br.readLine()) != null) {
-                // 1. SKIP EMPTY LINES
-                if (line.trim().isEmpty()) {
-                    continue;
-                }
-
+                if (line.trim().isEmpty()) continue;
                 String[] data = line.split(",");
-
-                // 2. CHECK COLUMN COUNT
-                // sales.csv format: Date,Customer,Model,Qty,Total,Method,Employee (7 cols)
-                // We need at least up to Total (Index 4), so length >= 5 is safe
-                if (data.length < 5) {
-                    continue; 
-                }
+                if (data.length < 5) continue;
 
                 try {
-                    // 3. GET TOTAL PRICE (Column 4)
-                    // Data: [0]Date, [1]Name, [2]Model, [3]Qty, [4]Total, ...
-                    double price = Double.parseDouble(data[4]);
-                    total += price;
+                    total += Double.parseDouble(data[4]);
                 } catch (NumberFormatException e) {
-                    // Skip if data is corrupted
-                    continue;
+                    // ignore invalid number
                 }
             }
-
         } catch (IOException e) {
-            System.out.println("Error reading sales file: " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error reading sales file.");
         }
-
         return total;
     }
 
-    // Find most sold product model
     public static String findMostSoldProduct(String filePath) {
         Map<String, Integer> productMap = new HashMap<>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
-
             while ((line = br.readLine()) != null) {
                 if (line.trim().isEmpty()) continue;
-
                 String[] data = line.split(",");
                 if (data.length < 5) continue;
 
-                // GET MODEL (Index 2) and QUANTITY (Index 3)
-                String model = data[2]; 
-                
+                String model = data[2];
                 try {
-                    int quantity = Integer.parseInt(data[3]);
-                    productMap.put(model, productMap.getOrDefault(model, 0) + quantity);
-                } catch (NumberFormatException e) {
-                    continue;
-                }
+                    int qty = Integer.parseInt(data[3]);
+                    productMap.put(model, productMap.getOrDefault(model, 0) + qty);
+                } catch (NumberFormatException e) {}
             }
+        } catch (IOException e) {}
 
-        } catch (IOException e) {
-            System.out.println("Error reading sales file.");
-        }
-
-        String bestProduct = "N/A";
-        int maxQty = 0;
-
+        String best = "N/A";
+        int max = 0;
         for (String model : productMap.keySet()) {
-            if (productMap.get(model) > maxQty) {
-                maxQty = productMap.get(model);
-                bestProduct = model;
+            if (productMap.get(model) > max) {
+                max = productMap.get(model);
+                best = model;
             }
         }
-
-        return bestProduct + " (" + maxQty + " units)";
+        return best + " (" + max + " units)";
     }
 
-    /* ===============================
-       AUTO EMAIL (SIMULATION)
-       =============================== */
+    public static String sendAutoEmail(String email, double total, String best) {
+        return  "=== AUTO EMAIL SIMULATION ===\n"
+              + "To: " + email + "\n"
+              + "Total Sales: RM " + total + "\n"
+              + "Best Seller: " + best + "\n"
+              + "============================\n";
+    }
 
-    public static void sendAutoEmail(
-            String receiverEmail,
-            String reportDate,
-            double totalSales,
-            String bestProduct,
-            String attachmentPath) {
+    // ================= GUI CONSTRUCTOR =================
 
-        System.out.
+    public AutoEmailAndAnalytics() {
+        setTitle("Sales Analytics System");
+        setSize(500, 400);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        outputArea = new JTextArea();
+        outputArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(outputArea);
+
+        JButton analyzeBtn = new JButton("Analyze Sales");
+        JButton emailBtn = new JButton("Send Auto Email");
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(analyzeBtn);
+        buttonPanel.add(emailBtn);
+
+        add(scrollPane, BorderLayout.CENTER);
+        add(buttonPanel, BorderLayout.SOUTH);
+
+        // ===== BUTTON ACTIONS =====
+
+        analyzeBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String file = "sales_data.csv";
+                totalSales = calculateTotalSales(file);
+                bestProduct = findMostSoldProduct(file);
+
+                outputArea.setText("");
+                outputArea.append("=== ANALYTICS REPORT ===\n");
+                outputArea.append("Total Revenue: RM " + totalSales + "\n");
+                outputArea.append("Best Selling Product: " + bestProduct + "\n");
+            }
+        });
+
+        emailBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                outputArea.append("\n");
+                outputArea.append(sendAutoEmail(
+                        "manager@goldenhour.com",
+                        totalSales,
+                        bestProduct
+                ));
+            }
+        });
+    }
+
+    // ================= MAIN METHOD =================
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            new AutoEmailAndAnalytics().setVisible(true);
+        });
+    }
+}
