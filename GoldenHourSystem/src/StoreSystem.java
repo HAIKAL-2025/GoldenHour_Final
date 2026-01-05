@@ -351,7 +351,7 @@ public class StoreSystem {
         
         while (true) {
             System.out.println("\n===========================================");
-            System.out.println("   GOLDENHOUR MANAGEMENT SYSTEM (FARIST)   ");
+            System.out.println("   GOLDENHOUR MANAGEMENT SYSTEM    ");
             System.out.println("===========================================");
             System.out.println("1. Search Stock Information");
             System.out.println("2. Search Sales Information");
