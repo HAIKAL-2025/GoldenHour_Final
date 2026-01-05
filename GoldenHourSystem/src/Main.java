@@ -2,7 +2,7 @@ import javax.swing.SwingUtilities;
 
 public class Main {
     public static void main(String[] args) {
-        // Run the application safely on the Event Dispatch Thread
+        // Launches the GUI correctly
         SwingUtilities.invokeLater(() -> {
             new LoginAttendance().setVisible(true);
         });

@@ -1,56 +1,23 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package projectproject;
 import java.util.Scanner;
-import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 
 public class StockInStockOut {
 
-private static void messWithTheFile(String stockMovementChoice){
-    Scanner userInput = new Scanner(System.in);
-    
-    List<List<String>> records = new ArrayList<>();
-    try(BufferedReader modelFile = new BufferedReader(new FileReader("model.csv"))){
-        String line;
-        while((line = modelFile.readLine()) != null){ //each value in each line is separated by comma into array of strings
-            String[] values = line.split(",");
-            records.add(Arrays.asList(values));  
-        }
-        
-        
-    }catch(FileNotFoundException e){
-        
-    }catch(IOException e){
-        
+    public static void displayDateTime(){
+        LocalTime currentTime = LocalTime.now();
+        System.out.println("Current Time: " + currentTime);
     }
-}
-    
-public static void displayDateTime(){
-    LocalTime currentTime = LocalTime.now();
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-    String textTime = currentTime.format(formatter);
-    
-    System.out.println("Date: " + LocalDate.now());
-    System.out.println("Time: " + textTime);
-    System.out.println();
-}   
 
     public static void main(String[] args){
         Scanner userInput = new Scanner(System.in);
-        String stockMovementChoice = new String();
+        String stockMovementChoice = "";
         boolean hasValidInput = false;
         
         while(!hasValidInput){
@@ -59,33 +26,39 @@ public static void displayDateTime(){
             if(stockMovementChoice.equalsIgnoreCase("In") || stockMovementChoice.equalsIgnoreCase("Out"))
                 hasValidInput = true;
             else
-                System.out.println("\u001B[31m" + "Invalid output" + "\u001B[0m");
+                System.out.println("Invalid input. Type 'In' or 'Out'.");
         }
         
-        List<String> model = new ArrayList<>();
-        if(stockMovementChoice.equalsIgnoreCase("In")){//there are like methods reused in both choice
-            System.out.println("=== Stock In ===");
+        // Read models.csv to check availability
+        List<List<String>> records = new ArrayList<>();
+        try(BufferedReader br = new BufferedReader(new FileReader("models.csv"))){
+            String line;
+            while((line = br.readLine()) != null){ 
+                String[] values = line.split(",");
+                records.add(Arrays.asList(values));  
+            }
+        } catch(IOException e){
+            System.out.println("Error reading models.csv");
+            return;
+        }
+
+        if(stockMovementChoice.equalsIgnoreCase("In")){
+            System.out.println("\n=== Stock In (Receiving) ===");
             displayDateTime();
             
-            System.out.print("From: ");
+            System.out.print("From (Supplier/Outlet): ");
             String placeInInput = userInput.next();
-            System.out.println("To: C60");
-            
-            System.out.println("Models Received:");
-            
-            
-            
+            System.out.println("To: Outlet C60");
+            System.out.println("(Note: This is a simulation. To update actual stock, use Sales System or Edit function.)");
         }
         else{
-            System.out.println("=== Stock Out ===");
+            System.out.println("\n=== Stock Out (Transfer) ===");
             displayDateTime();
             
-            System.out.println("From: C60");
-            System.out.print("To: ");
+            System.out.println("From: Outlet C60");
+            System.out.print("To (Outlet Code): ");
             String placeOutOutput = userInput.next();
-            
-            System.out.println("Models Sent: ");
-            
+            System.out.println("Transfer recorded to " + placeOutOutput);
         }
     }
 }
